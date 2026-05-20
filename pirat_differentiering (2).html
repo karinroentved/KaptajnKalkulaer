@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaptajn Kalkuløs – Differentialernes Hav</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ocean: #0a1628;
+    --deep: #060e1a;
+    --wood: #5c3a1e;
+    --wood-light: #8b5e2a;
+    --wood-highlight: #c4843a;
+    --gold: #d4a017;
+    --gold-bright: #f0c040;
+    --gold-pale: #f5dfa0;
+    --parchment: #f2e8c8;
+    --parchment-dark: #d4c89a;
+    --ink: #1a0f00;
+    --red: #8b1a1a;
+    --red-bright: #c0392b;
+    --green: #1a5c2a;
+    --green-bright: #27ae60;
+    --rope: #8b6914;
+    --foam: rgba(255,255,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--parchment);
+    font-family: 'IM Fell English', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ===== OCEAN BACKGROUND ===== */
+  .ocean-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: linear-gradient(180deg, #0a1628 0%, #0d2040 40%, #0a1830 100%);
+    overflow: hidden;
+  }
+  .wave {
+    position: absolute; width: 200%; height: 120px;
+    background: linear-gradient(transparent, rgba(15,40,80,0.4));
+    border-radius: 50%;
+    animation: waveMove linear infinite;
+  }
+  .wave:nth-child(1) { top: 15%; animation-duration: 14s; opacity: 0.4; }
+  .wave:nth-child(2) { top: 35%; animation-duration: 20s; opacity: 0.3; animation-delay: -5s; }
+  .wave:nth-child(3) { top: 55%; animation-duration: 16s; opacity: 0.25; animation-delay: -8s; }
+  .wave:nth-child(4) { top: 72%; animation-duration: 22s; opacity: 0.2; animation-delay: -3s; }
+  @keyframes waveMove {
+    0% { transform: translateX(-50%) scaleY(1); }
+    50% { transform: translateX(0%) scaleY(1.3); }
+    100% { transform: translateX(-50%) scaleY(1); }
+  }
+
+  .stars {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,200,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 8%, rgba(255,255,200,0.6) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 40% 20%, rgba(255,255,200,0.9) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 5%, rgba(255,255,200,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 12%, rgba(255,255,200,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 88% 18%, rgba(255,255,200,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 30%, rgba(255,255,200,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 25%, rgba(255,255,200,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 28%, rgba(255,255,200,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5% 40%, rgba(255,255,200,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 35% 35%, rgba(255,255,200,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 38%, rgba(255,255,200,0.5) 0%, transparent 100%);
+  }
+
+  /* ===== MAIN CONTAINER ===== */
+  #app {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+
+  /* ===== SHIP DECORATION ===== */
+  .ship-deco {
+    font-size: 3rem;
+    animation: shipBob 4s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+    user-select: none;
+  }
+  @keyframes shipBob {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+  }
+
+  /* ===== PARCHMENT CARD ===== */
+  .parchment {
+    background: linear-gradient(135deg, #f2e8c8 0%, #e8d8a8 30%, #f0e4bc 60%, #d8c890 100%);
+    border: 3px solid var(--wood-light);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 30px rgba(139,94,42,0.2),
+      0 8px 32px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(139,94,42,0.3);
+    color: var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .parchment::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(139,94,42,0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .parchment-corner {
+    position: absolute;
+    width: 24px; height: 24px;
+    border-color: var(--wood-light);
+    border-style: solid;
+    opacity: 0.6;
+  }
+  .parchment-corner.tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+  .parchment-corner.tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+  .parchment-corner.bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+  .parchment-corner.br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+  /* ===== TITLE / HEADER ===== */
+  .game-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
+    color: var(--gold-bright);
+    text-shadow:
+      0 0 20px rgba(240,192,64,0.5),
+      2px 2px 4px rgba(0,0,0,0.8);
+    letter-spacing: 0.05em;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .game-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.75rem, 2vw, 1rem);
+    color: var(--gold-pale);
+    letter-spacing: 0.2em;
+    text-align: center;
+    opacity: 0.8;
+  }
+  .divider {
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 10px 0;
+  }
+  .skull { font-size: 1.2em; }
+
+  /* ===== SCREENS ===== */
+  .screen {
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== START SCREEN ===== */
+  #start-screen {
+    width: 100%; max-width: 620px;
+    gap: 16px;
+  }
+  .start-card {
+    width: 100%;
+    padding: 30px 32px;
+  }
+  .story-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .story-text em { font-style: italic; color: var(--red); }
+
+  .levels-list {
+    list-style: none;
+    display: grid; gap: 6px;
+    margin-bottom: 16px;
+  }
+  .levels-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 0.85rem; color: var(--ink);
+    padding: 6px 10px;
+    background: rgba(139,94,42,0.1);
+    border-left: 3px solid var(--wood-light);
+    border-radius: 2px;
+  }
+  .level-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  .name-section { width: 100%; }
+  .name-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .name-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-family: 'IM Fell English', serif;
+    font-size: 1.1rem;
+    background: rgba(255,255,255,0.7);
+    border: 2px solid var(--wood-light);
+    border-radius: 3px;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .name-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212,160,23,0.2);
+  }
+  .name-input::placeholder { color: rgba(26,15,0,0.4); font-style: italic; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .btn-primary {
+    padding: 14px 36px;
+    font-size: 1rem;
+    background: linear-gradient(180deg, #8b1a1a 0%, #6b1010 100%);
+    color: var(--gold-pale);
+    border: 2px solid #a02020;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(180deg, #a02020 0%, #801010 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-gold {
+    padding: 11px 28px;
+    font-size: 0.9rem;
+    background: linear-gradient(180deg, #d4a017 0%, #a07810 100%);
+    color: var(--ink);
+    border: 2px solid #c09010;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  }
+  .btn-gold:hover {
+    background: linear-gradient(180deg, #e0b020 0%, #b08818 100%);
+    transform: translateY(-1px);
+  }
+
+  .btn-hint {
+    padding: 8px 18px;
+    font-size: 0.8rem;
+    background: linear-gradient(180deg, #2a4a8a 0%, #1a3070 100%);
+    color: var(--gold-pale);
+    border: 2px solid #3a5aaa;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .btn-hint:hover {
+    background: linear-gradient(180deg, #3a5aaa 0%, #2a4090 100%);
+    transform: translateY(-1px);
+  }
+
+  .btn-check {
+    padding: 11px 28px;
+    font-size: 0.95rem;
+    background: linear-gradient(180deg, #1a5c2a 0%, #104020 100%);
+    color: var(--gold-pale);
+    border: 2px solid #2a7a3a;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  }
+  .btn-check:hover {
+    background: linear-gradient(180deg, #2a7a3a 0%, #1a5228 100%);
+    transform: translateY(-1px);
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #game-screen {
+    width: 100%; max-width: 700px;
+    gap: 14px;
+  }
+
+  /* HUD */
+  .hud {
+    width: 100%;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px;
+    background: rgba(6,14,26,0.8);
+    border: 1px solid rgba(212,160,23,0.3);
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+  .hud-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .hud-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+  .hud-value {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    color: var(--gold-bright);
+    font-weight: 600;
+  }
+
+  /* Level indicator */
+  .level-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: var(--gold-bright);
+    text-shadow: 0 0 12px rgba(240,192,64,0.4), 2px 2px 4px rgba(0,0,0,0.8);
+    text-align: center;
+  }
+
+  /* Progress dots */
+  .progress-dots {
+    display: flex; gap: 8px; justify-content: center;
+  }
+  .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--gold);
+    transition: all 0.3s;
+  }
+  .dot.correct { background: var(--green-bright); border-color: var(--green-bright); }
+  .dot.wrong { background: var(--red-bright); border-color: var(--red-bright); }
+  .dot.current { background: var(--gold); animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,160,23,0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(212,160,23,0); }
+  }
+
+  /* Question card */
+  .question-card {
+    width: 100%;
+    padding: 24px 28px;
+  }
+  .q-number {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--wood-light);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .question-text {
+    font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+    color: var(--ink);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .question-func {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-style: italic;
+    color: var(--red);
+    margin-bottom: 20px;
+    padding: 10px 14px;
+    background: rgba(139,94,42,0.08);
+    border-left: 3px solid var(--wood-light);
+    border-radius: 2px;
+    font-family: 'IM Fell English', serif;
+  }
+
+  .answer-row {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .answer-label {
+    font-size: 1.05rem;
+    color: var(--ink);
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .answer-input {
+    flex: 1; min-width: 160px;
+    padding: 10px 14px;
+    font-family: 'IM Fell English', serif;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.75);
+    border: 2px solid var(--wood-light);
+    border-radius: 3px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .answer-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212,160,23,0.2);
+  }
+  .answer-input.correct-input { border-color: var(--green-bright); background: rgba(39,174,96,0.1); }
+  .answer-input.wrong-input { border-color: var(--red-bright); background: rgba(192,57,43,0.1); }
+
+  .feedback-row {
+    display: flex; align-items: center; gap: 10px; margin-top: 12px;
+    min-height: 32px;
+  }
+  .feedback-text {
+    font-size: 0.95rem;
+    font-style: italic;
+    animation: fadeIn 0.3s ease;
+  }
+  .feedback-text.correct { color: var(--green); }
+  .feedback-text.wrong { color: var(--red); }
+
+  .btn-row {
+    display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;
+  }
+
+  /* Hint box */
+  .hint-box {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: rgba(42,74,138,0.12);
+    border: 1px solid rgba(42,74,138,0.4);
+    border-radius: 3px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--ink);
+    animation: fadeIn 0.3s ease;
+    display: none;
+  }
+  .hint-box.visible { display: block; }
+  .hint-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: #2a4a8a;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .hint-box code {
+    background: rgba(139,94,42,0.1);
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--red);
+  }
+
+  /* Correct answer reveal */
+  .correct-answer-reveal {
+    font-size: 0.85rem;
+    color: var(--red);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* ===== LEVEL MAP SCREEN ===== */
+  #map-screen {
+    width: 100%; max-width: 600px;
+    gap: 16px;
+  }
+  .map-card {
+    width: 100%;
+    padding: 24px 28px;
+  }
+  .map-grid {
+    display: grid; gap: 10px;
+    margin-top: 12px;
+  }
+  .map-level {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    border: 2px solid transparent;
+  }
+  .map-level.unlocked {
+    background: rgba(139,94,42,0.1);
+    border-color: var(--wood-light);
+  }
+  .map-level.unlocked:hover {
+    background: rgba(139,94,42,0.2);
+    transform: translateX(4px);
+  }
+  .map-level.locked {
+    background: rgba(0,0,0,0.1);
+    border-color: rgba(139,94,42,0.3);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  .map-level.completed {
+    background: rgba(26,92,42,0.12);
+    border-color: var(--green-bright);
+  }
+  .map-level.current-playing {
+    background: rgba(212,160,23,0.12);
+    border-color: var(--gold);
+    animation: borderPulse 2s ease-in-out infinite;
+  }
+  @keyframes borderPulse {
+    0%, 100% { border-color: var(--gold); }
+    50% { border-color: var(--gold-bright); box-shadow: 0 0 10px rgba(212,160,23,0.3); }
+  }
+  .map-level-icon { font-size: 1.6rem; flex-shrink: 0; }
+  .map-level-info { flex: 1; }
+  .map-level-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .map-level-desc { font-size: 0.78rem; color: rgba(26,15,0,0.65); line-height: 1.4; }
+  .map-level-status {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .status-done { background: var(--green); color: #fff; }
+  .status-locked { background: rgba(0,0,0,0.2); color: rgba(26,15,0,0.5); }
+  .status-play { background: var(--gold); color: var(--ink); }
+  .status-retry { background: var(--red); color: #fff; }
+
+  /* ===== LEVEL TRANSITION ===== */
+  #level-result-screen {
+    width: 100%; max-width: 540px;
+    gap: 16px;
+  }
+  .result-card {
+    width: 100%;
+    padding: 28px 32px;
+    text-align: center;
+  }
+  .result-big-icon { font-size: 4rem; margin-bottom: 10px; }
+  .result-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .result-title.success { color: var(--green); }
+  .result-title.fail { color: var(--red); }
+  .result-msg { font-size: 0.95rem; color: var(--ink); line-height: 1.6; margin-bottom: 16px; }
+  .result-score-display {
+    display: flex; justify-content: center; gap: 6px; margin-bottom: 16px;
+  }
+  .result-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid; }
+  .result-dot.c { background: var(--green-bright); border-color: var(--green-bright); }
+  .result-dot.w { background: var(--red-bright); border-color: var(--red-bright); }
+  .result-dot.e { background: transparent; border-color: var(--wood-light); }
+
+  /* ===== WIN SCREEN ===== */
+  #win-screen {
+    width: 100%; max-width: 580px;
+    gap: 16px;
+  }
+  .win-card {
+    width: 100%;
+    padding: 32px 36px;
+    text-align: center;
+  }
+  .win-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    color: var(--gold-bright);
+    text-shadow: 0 0 20px rgba(240,192,64,0.4);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .win-msg {
+    font-size: 1rem; line-height: 1.7;
+    color: var(--ink); margin-bottom: 20px;
+  }
+  .win-stats {
+    display: flex; justify-content: center; gap: 24px;
+    margin-bottom: 20px;
+  }
+  .win-stat { display: flex; flex-direction: column; align-items: center; }
+  .win-stat-num {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 2rem;
+    color: var(--gold-bright);
+  }
+  .win-stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--wood-light);
+    text-transform: uppercase;
+  }
+  .treasure-burst {
+    font-size: 3rem;
+    animation: treasureSpin 2s ease-in-out infinite;
+    display: block; margin-bottom: 10px;
+  }
+  @keyframes treasureSpin {
+    0%, 100% { transform: rotate(-5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); }
+  }
+  .confetti-row { font-size: 1.5rem; letter-spacing: 8px; margin-bottom: 10px; }
+
+  /* Misc */
+  .mt8 { margin-top: 8px; }
+  .mt12 { margin-top: 12px; }
+  .mt16 { margin-top: 16px; }
+  .text-center { text-align: center; }
+  .full-width { width: 100%; }
+
+  /* Fade overlay for transitions */
+  .fade-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--deep);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .fade-overlay.fading { opacity: 1; pointer-events: all; }
+
+  /* Locked level tooltip */
+  .lock-tip {
+    font-size: 0.8rem;
+    color: var(--red);
+    font-style: italic;
+    text-align: center;
+    min-height: 20px;
+  }
+
+  /* Scrollable inner if very tall on small screens */
+  @media (max-height: 700px) {
+    #app { justify-content: flex-start; padding-top: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ocean-bg">
+  <div class="stars"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
+
+<div class="fade-overlay" id="fade"></div>
+
+<div id="app">
+
+  <!-- ======= START SCREEN ======= -->
+  <div id="start-screen" class="screen active">
+    <div class="ship-deco">⚓</div>
+    <div class="game-title">Kaptajn Kalkuløs</div>
+    <div class="game-subtitle">☠ &nbsp; Differentialernes Hav &nbsp; ☠</div>
+
+    <div class="parchment start-card">
+      <div class="parchment-corner tl"></div><div class="parchment-corner tr"></div>
+      <div class="parchment-corner bl"></div><div class="parchment-corner br"></div>
+      <p class="story-text">
+        Ahoj, matros! Legenden fortæller om et skjult skattekammer fyldt med guldmønter – men kammerets lås åbnes kun af den, der behersker <em>differentialregningens mystiske kunster</em>.
+        Fem have af stigende sværhedsgrad skiller dig fra skatten. Løs mindst 3 ud af 5 opgaver på hvert hav for at sejle videre!
+      </p>
+      <div class="divider"></div>
+      <ul class="levels-list">
+        <li><span class="level-icon">🌊</span><span><strong>Niveau I – Rolige Vande:</strong> Polynomier op til 2. grad</span></li>
+        <li><span class="level-icon">⚡</span><span><strong>Niveau II – Stormhav:</strong> Polynomier af 3. og 4. grad (ledende koefficient = 1)</span></li>
+        <li><span class="level-icon">🦈</span><span><strong>Niveau III – Hajenes Rev:</strong> Polynomier op til 6. grad, op til 4 led</span></li>
+        <li><span class="level-icon">🐙</span><span><strong>Niveau IV – Det Dybe Dyb:</strong> Eksponential-, logaritme- og rodfunktioner</span></li>
+        <li><span class="level-icon">💀</span><span><strong>Niveau V – Kaptajnens Udfordring:</strong> Blandede opgaver</span></li>
+      </ul>
+      <div class="divider"></div>
+      <div class="name-section">
+        <label class="name-label" for="pirate-name">⚔ &nbsp; Dit piratbrev-navn, matros:</label>
+        <input class="name-input" id="pirate-name" type="text" placeholder="Skriv dit navn her…" maxlength="30">
+      </div>
+      <div class="mt16 text-center">
+        <button class="btn btn-primary" onclick="startGame()">⚓ &nbsp; Sæt sejl!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= LEVEL MAP SCREEN ======= -->
+  <div id="map-screen" class="screen">
+    <div class="game-title" style="font-size:1.6rem;">🗺 Havkort</div>
+    <div id="map-card" class="parchment map-card">
+      <div class="parchment-corner tl"></div><div class="parchment-corner tr"></div>
+      <div class="parchment-corner bl"></div><div class="parchment-corner br"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.8rem;letter-spacing:0.15em;color:var(--wood-light);margin-bottom:10px;text-transform:uppercase;">Vælg dit næste hav</div>
+      <div class="map-grid" id="map-grid"></div>
+      <div class="lock-tip mt8" id="lock-tip"></div>
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--gold-pale);opacity:0.6;letter-spacing:0.1em;">
+      Samlet rigtige: <span id="map-total-correct">0</span> / <span id="map-total-q">0</span>
+    </div>
+  </div>
+
+  <!-- ======= GAME SCREEN ======= -->
+  <div id="game-screen" class="screen">
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-label">Sømand</span>
+        <span class="hud-value" id="hud-name">–</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Niveau</span>
+        <span class="hud-value" id="hud-level">1</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Rigtige</span>
+        <span class="hud-value" id="hud-correct">0/0</span>
+      </div>
+    </div>
+
+    <div class="level-title" id="level-banner">🌊 Niveau I – Rolige Vande</div>
+
+    <div class="progress-dots" id="progress-dots"></div>
+
+    <div class="parchment question-card" id="q-card">
+      <div class="parchment-corner tl"></div><div class="parchment-corner tr"></div>
+      <div class="parchment-corner bl"></div><div class="parchment-corner br"></div>
+      <div class="q-number" id="q-number">Spørgsmål 1 af 5</div>
+      <div class="question-text">Find den afledede funktion af:</div>
+      <div class="question-func" id="q-func">f(x) = …</div>
+      <div id="sqrt-tip" style="display:none;font-size:0.78rem;color:#2a4a8a;font-style:italic;margin-bottom:12px;margin-top:-12px;padding:4px 14px;">
+        💡 Skriv <strong>kvrod(x)</strong> for kvadratroden af x i dit svar
+      </div>
+      <div class="answer-row">
+        <span class="answer-label">f'(x) =</span>
+        <input class="answer-input" id="answer-input" type="text" placeholder="Skriv dit svar…" autocomplete="off">
+      </div>
+      <div class="correct-answer-reveal" id="correct-reveal"></div>
+      <div class="feedback-row">
+        <span class="feedback-text" id="feedback-text"></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-hint" onclick="toggleHint()">🗺 Hint</button>
+        <button class="btn btn-check" id="check-btn" onclick="checkAnswer()">⚔ Svar</button>
+        <button class="btn btn-gold" id="next-btn" onclick="nextQuestion()" style="visibility:hidden;">Næste ➤</button>
+      </div>
+      <div class="hint-box" id="hint-box">
+        <div class="hint-title">📜 Regneregler</div>
+        <div id="hint-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= LEVEL RESULT SCREEN ======= -->
+  <div id="level-result-screen" class="screen">
+    <div class="parchment result-card">
+      <div class="parchment-corner tl"></div><div class="parchment-corner tr"></div>
+      <div class="parchment-corner bl"></div><div class="parchment-corner br"></div>
+      <div class="result-big-icon" id="result-icon">⚓</div>
+      <div class="result-title" id="result-title">Klaret!</div>
+      <div class="result-msg" id="result-msg"></div>
+      <div class="result-score-display" id="result-dots"></div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn btn-gold" onclick="goToMap()">🗺 Havkortet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= WIN SCREEN ======= -->
+  <div id="win-screen" class="screen">
+    <div class="parchment win-card">
+      <div class="parchment-corner tl"></div><div class="parchment-corner tr"></div>
+      <div class="parchment-corner bl"></div><div class="parchment-corner br"></div>
+      <span class="treasure-burst">💰</span>
+      <div class="confetti-row">🎉 ⭐ 🏆 ⭐ 🎉</div>
+      <div class="win-title" id="win-title">Tillykke!</div>
+      <div class="win-msg" id="win-msg"></div>
+      <div class="win-stats">
+        <div class="win-stat">
+          <div class="win-stat-num" id="win-correct">–</div>
+          <div class="win-stat-label">Rigtige</div>
+        </div>
+        <div class="win-stat">
+          <div class="win-stat-num" id="win-total">–</div>
+          <div class="win-stat-label">Spørgsmål</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="mt12 text-center">
+        <button class="btn btn-primary" onclick="restartGame()">⚓ Spil igen</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =========================================================
+//  GAME DATA
+// =========================================================
+
+const LEVEL_DEFS = [
+  {
+    id: 1,
+    name: "Niveau I – Rolige Vande",
+    icon: "🌊",
+    desc: "Polynomier op til 2. grad",
+    banner: "🌊 Niveau I – Rolige Vande",
+  },
+  {
+    id: 2,
+    name: "Niveau II – Stormhav",
+    icon: "⚡",
+    desc: "Polynomier af 3. og 4. grad, ledende koefficient = 1",
+    banner: "⚡ Niveau II – Stormhav",
+  },
+  {
+    id: 3,
+    name: "Niveau III – Hajenes Rev",
+    icon: "🦈",
+    desc: "Polynomier op til 6. grad, op til 4 led, heltallige koefficienter",
+    banner: "🦈 Niveau III – Hajenes Rev",
+  },
+  {
+    id: 4,
+    name: "Niveau IV – Det Dybe Dyb",
+    icon: "🐙",
+    desc: "eˣ, e^(kx), ln(x), 1/x, √x samt polynomier",
+    banner: "🐙 Niveau IV – Det Dybe Dyb",
+  },
+  {
+    id: 5,
+    name: "Niveau V – Kaptajnens Udfordring",
+    icon: "💀",
+    desc: "Blandede opgaver svarende til niveau 3 og 4",
+    banner: "💀 Niveau V – Kaptajnens Udfordring",
+  },
+];
+
+// ---- Helpers ----
+function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+function rndNonZero(a, b) { let v; do { v = rnd(a, b); } while (v === 0); return v; }
+
+// Convert a caret-notation string to HTML with <sup> tags
+// e.g. "x^2" → "x<sup>2</sup>", "e^(2x)" → "e<sup>2x</sup>", "x^(1/2)" → "x<sup>1/2</sup>"
+function mathToHTML(s) {
+  // Handle e^(kx) and e^x forms
+  s = s.replace(/e\^\(([^)]+)\)/g, (_, exp) => 'e<sup>' + exp + '</sup>');
+  s = s.replace(/e\^x/g, 'e<sup>x</sup>');
+  // Handle x^(n) or x^n
+  s = s.replace(/x\^\(([^)]+)\)/g, (_, exp) => 'x<sup>' + exp + '</sup>');
+  s = s.replace(/x\^(-?\d+)/g, (_, exp) => 'x<sup>' + exp + '</sup>');
+  // √x display
+  s = s.replace(/√x/g, '√x');
+  // kvrod(x) stays as-is (input alias only)
+  return s;
+}
+
+function coefStr(c, isFirst) {
+  if (isFirst) return c === 1 ? '' : c === -1 ? '-' : String(c);
+  if (c === 1) return '+';
+  if (c === -1) return '-';
+  return c > 0 ? '+' + c : String(c);
+}
+function termStr(coef, power, isFirst) {
+  if (coef === 0) return '';
+  const cs = coefStr(coef, isFirst);
+  if (power === 0) return (isFirst ? '' : (coef > 0 ? '+' : '')) + coef;
+  if (power === 1) return cs + 'x';
+  return cs + 'x^' + power;
+}
+function polyStr(terms) { // terms: [{c, p}] sorted desc — returns caret notation
+  let s = '';
+  let first = true;
+  for (const {c, p} of terms) {
+    if (c === 0) continue;
+    s += termStr(c, p, first);
+    first = false;
+  }
+  return s || '0';
+}
+function derivTermStr(coef, power, isFirst) {
+  const dc = coef * power;
+  const dp = power - 1;
+  if (dc === 0) return '';
+  const cs = coefStr(dc, isFirst);
+  if (dp === 0) return (isFirst ? '' : (dc > 0 ? '+' : '')) + dc;
+  if (dp === 1) return cs + 'x';
+  return cs + 'x^' + dp;
+}
+function derivPoly(terms) {
+  const derived = terms.map(({c, p}) => ({c: c * p, p: p - 1})).filter(t => t.p >= 0 && t.c !== 0);
+  let s = '';
+  let first = true;
+  for (const {c, p} of derived) {
+    if (c === 0) continue;
+    s += termStr(c, p, first);
+    first = false;
+  }
+  return s || '0';
+}
+
+// Normalize an answer string for comparison
+function normalizeAnswer(s) {
+  s = s
+    .replace(/<sup>([^<]+)<\/sup>/g, '^($1)')  // strip HTML superscripts back to caret
+    .replace(/\s/g, '')
+    .replace(/\*\*/g, '^')
+    .replace(/\*/g, '')
+    .replace(/kvrod\(x\)/gi, 'x^(1/2)')
+    .replace(/kvrod/gi, 'x^(1/2)')
+    .replace(/√x/g, 'x^(1/2)')
+    .replace(/sqrt\(x\)/gi, 'x^(1/2)')
+    .replace(/\+0$/,'')
+    .toLowerCase()
+    .trim();
+  // Remove superfluous parentheses around simple denominators: /(x^2) → /x^2, /(2x) → /2x etc.
+  s = s.replace(/\/\(([^()]+)\)/g, '/$1');
+  return s;
+}
+
+// Check if user answer matches expected (try a few canonical forms)
+function answersMatch(user, expected) {
+  const u = normalizeAnswer(user);
+  // Build list of expected forms
+  const forms = buildForms(expected);
+  return forms.some(f => normalizeAnswer(f) === u);
+}
+
+function buildForms(expr) {
+  // Return multiple equivalent string representations
+  const forms = [expr];
+  // e.g. "3x^2+2x" also accept "2x+3x^2"
+  // For simplicity: split by + and -, re-join permutations for up to 3 terms
+  // Also: "x^1" = "x", coefficient 1 can be omitted, etc.
+  // We do a simple tokenizer
+  const tokens = tokenize(expr);
+  if (tokens && tokens.length <= 3) {
+    const perms = permutations(tokens);
+    perms.forEach(p => forms.push(joinTokens(p)));
+  }
+  // Add version with kvrod replacing √x in expected (for when expected contains √x)
+  forms.push(expr.replace(/√x/g, 'kvrod(x)'));
+  forms.push(expr.replace(/1\/\(2√x\)/g, 'kvrod(x)/2').replace(/1\/\(2kvrod\(x\)\)/gi, 'kvrod(x)/2'));
+  return forms;
+}
+
+function tokenize(expr) {
+  // Split expression into signed terms
+  const parts = [];
+  let cur = '';
+  for (let i = 0; i < expr.length; i++) {
+    const ch = expr[i];
+    if ((ch === '+' || ch === '-') && i > 0 && !/[eE(]/.test(expr[i-1])) {
+      if (cur) parts.push(cur);
+      cur = ch;
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur) parts.push(cur);
+  return parts;
+}
+
+function joinTokens(tokens) {
+  let s = '';
+  tokens.forEach((t, i) => {
+    if (i === 0) s += t;
+    else s += (t.startsWith('-') ? t : '+' + t);
+  });
+  return s;
+}
+
+function permutations(arr) {
+  if (arr.length <= 1) return [arr];
+  const result = [];
+  arr.forEach((item, i) => {
+    const rest = [...arr.slice(0, i), ...arr.slice(i+1)];
+    permutations(rest).forEach(p => result.push([item, ...p]));
+  });
+  return result;
+}
+
+// =========================================================
+//  QUESTION GENERATORS
+// =========================================================
+
+function genLevel1() {
+  // Polynomier op til 2. grad
+  const type = rnd(0, 3);
+  let func, deriv, hint;
+  const hintPoly = hintPolynomial();
+
+  if (type === 0) {
+    // ax + b
+    const a = rndNonZero(-6, 6), b = rnd(-5, 5);
+    const terms = [{c:a,p:1},{c:b,p:0}];
+    func = 'f(x) = ' + polyStr(terms);
+    deriv = derivPoly(terms);
+    hint = hintPoly;
+  } else if (type === 1) {
+    // ax^2
+    const a = rndNonZero(-5, 5);
+    func = 'f(x) = ' + polyStr([{c:a,p:2}]);
+    deriv = derivPoly([{c:a,p:2}]);
+    hint = hintPoly;
+  } else if (type === 2) {
+    // ax^2 + bx
+    const a = rndNonZero(-4,4), b = rndNonZero(-5,5);
+    const terms = [{c:a,p:2},{c:b,p:1}];
+    func = 'f(x) = ' + polyStr(terms);
+    deriv = derivPoly(terms);
+    hint = hintPoly;
+  } else {
+    // ax^2 + bx + c
+    const a = rndNonZero(-4,4), b = rnd(-4,4), c = rnd(-6,6);
+    const terms = [{c:a,p:2},{c:b,p:1},{c:c,p:0}];
+    func = 'f(x) = ' + polyStr(terms);
+    deriv = derivPoly(terms);
+    hint = hintPoly;
+  }
+  return {func, deriv, hint};
+}
+
+function genLevel2() {
+  // Polynomier af grad 3 eller 4, ledende koefficient = 1
+  const grade = rnd(3, 4);
+  const hint = hintPolynomial();
+  let terms = [{c:1, p:grade}];
+  const numExtra = rnd(1, grade - 1);
+  const usedPowers = new Set([grade]);
+  for (let i = 0; i < numExtra; i++) {
+    let p; do { p = rnd(0, grade - 1); } while (usedPowers.has(p));
+    usedPowers.add(p);
+    terms.push({c: rndNonZero(-5, 5), p});
+  }
+  terms.sort((a, b) => b.p - a.p);
+  const func = 'f(x) = ' + polyStr(terms);
+  const deriv = derivPoly(terms);
+  return {func, deriv, hint};
+}
+
+function genLevel3() {
+  // Polynomier op til 6. grad, op til 4 led, heltallige koefficienter
+  const grade = rnd(3, 6);
+  const numTerms = rnd(2, Math.min(4, grade + 1));
+  const hint = hintPolynomial();
+  const allPowers = Array.from({length: grade + 1}, (_, i) => i).sort(() => Math.random() - 0.5);
+  const chosen = allPowers.slice(0, numTerms);
+  // Ensure leading term is present with coeff ≠ 0
+  let terms = [];
+  const hasGrade = chosen.includes(grade);
+  if (!hasGrade) chosen[0] = grade;
+  for (const p of chosen) {
+    const c = p === grade ? rndNonZero(-5, 5) : rndNonZero(-6, 6);
+    terms.push({c, p});
+  }
+  terms.sort((a, b) => b.p - a.p);
+  const func = 'f(x) = ' + polyStr(terms);
+  const deriv = derivPoly(terms);
+  return {func, deriv, hint};
+}
+
+function genLevel4() {
+  // Mix of polynomial terms + special functions
+  const specials = [
+    { sym: 'e^x', deriv: 'e^x', hint: hintExp() },
+    { sym: 'e^(2x)', deriv: '2e^(2x)', hint: hintExpK(2) },
+    { sym: 'e^(3x)', deriv: '3e^(3x)', hint: hintExpK(3) },
+    { sym: 'e^(-x)', deriv: '-e^(-x)', hint: hintExpK(-1) },
+    { sym: 'e^(-2x)', deriv: '-2e^(-2x)', hint: hintExpK(-2) },
+    { sym: 'ln(x)', deriv: '1/x', hint: hintLn() },
+    { sym: '1/x', deriv: '-1/x^2', hint: hintRecip() },
+    { sym: '√x', deriv: '1/(2√x)', hint: hintSqrt() },
+  ];
+  const hint4 = hintLevel4();
+  const spec = specials[rnd(0, specials.length - 1)];
+
+  // Add 0–2 polynomial terms
+  const numPoly = rnd(0, 2);
+  let polyTerms = [];
+  const usedPowers = new Set();
+  for (let i = 0; i < numPoly; i++) {
+    let p; do { p = rnd(0, 3); } while (usedPowers.has(p));
+    usedPowers.add(p);
+    polyTerms.push({c: rndNonZero(-4, 4), p});
+  }
+  polyTerms.sort((a, b) => b.p - a.p);
+
+  let funcParts = [];
+  // Decide position of special term
+  const polyStr_ = polyStr(polyTerms);
+  const hasPolyBefore = rnd(0, 1) && numPoly > 0;
+
+  let funcStr, derivStr;
+  if (numPoly === 0) {
+    funcStr = 'f(x) = ' + spec.sym;
+    derivStr = spec.deriv;
+  } else {
+    if (hasPolyBefore) {
+      const pPart = polyStr(polyTerms);
+      const pDeriv = derivPoly(polyTerms);
+      const sep = spec.sym.startsWith('-') ? '' : '+';
+      funcStr = 'f(x) = ' + pPart + sep + spec.sym;
+      derivStr = pDeriv + (spec.deriv.startsWith('-') ? '' : '+') + spec.deriv;
+    } else {
+      const pPart = polyStr(polyTerms);
+      const pDeriv = derivPoly(polyTerms);
+      const sep = pPart.startsWith('-') ? '' : (spec.sym.endsWith('x') || spec.sym.endsWith(')') ? '' : '');
+      funcStr = 'f(x) = ' + spec.sym + (pPart.startsWith('-') ? '' : '+') + pPart;
+      derivStr = spec.deriv + (pDeriv.startsWith('-') ? '' : '+') + pDeriv;
+    }
+  }
+  // Combine hints
+  const hint = '<b>Speciel funktion:</b><br>' + spec.hint + '<br><br><b>Polynomier:</b><br>' + hintPolynomial();
+  return {func: funcStr, deriv: derivStr, hint};
+}
+
+function genLevel5() {
+  // Mix of level 3 and level 4
+  return rnd(0,1) === 0 ? genLevel3() : genLevel4();
+}
+
+// =========================================================
+//  HINTS
+// =========================================================
+function hintPolynomial() {
+  return `<b>Potensreglen:</b><br>
+Hvis <code>f(x) = x<sup>n</sup></code>, så er <code>f'(x) = n·x<sup>n-1</sup></code><br><br>
+<b>Eksempler:</b><br>
+• <code>(x<sup>3</sup>)' = 3x<sup>2</sup></code><br>
+• <code>(4x<sup>2</sup>)' = 8x</code><br>
+• <code>(3x)' = 3</code><br>
+• <code>(7)' = 0</code> (konstanter forsvinder!)<br><br>
+<b>Sumreglen:</b> Differentier hvert led for sig.`;
+}
+function hintExp() {
+  return `<code>(e<sup>x</sup>)' = e<sup>x</sup></code><br>e<sup>x</sup> er sin egen afledede! `;
+}
+function hintExpK(k) {
+  return `<code>(e<sup>kx</sup>)' = k·e<sup>kx</sup></code><br>Husk at gange med k! (k = ${k})`;
+}
+function hintLn() {
+  return `<code>(ln x)' = 1/x</code>`;
+}
+function hintRecip() {
+  return `<code>(1/x)' = (x<sup>-1</sup>)' = -x<sup>-2</sup> = -1/x<sup>2</sup></code><br>Skriv 1/x som x<sup>-1</sup> og brug potensreglen.`;
+}
+function hintSqrt() {
+  return `<code>(√x)' = (x<sup>1/2</sup>)' = ½·x<sup>-1/2</sup> = 1/(2√x)</code><br>Skriv √x som x<sup>1/2</sup> og brug potensreglen.<br><br><em>💡 Tip: Du kan skrive <code>kvrod(x)</code> i svarfeltet for kvadratroden af x, eller skrive <code>1/(2kvrod(x))</code> som svar.</em>`;
+}
+function hintLevel4() {
+  return hintPolynomial() + '<br><br><b>Specielle funktioner:</b><br>' +
+    hintExp() + '<br>' + hintLn() + '<br>' + hintRecip() + '<br>' + hintSqrt();
+}
+
+const GEN = [null, genLevel1, genLevel2, genLevel3, genLevel4, genLevel5];
+
+// =========================================================
+//  GAME STATE
+// =========================================================
+const state = {
+  playerName: '',
+  currentLevel: 1,
+  levelResults: [null, null, null, null, null, null], // idx 1–5
+  levelScores: [null, 0, 0, 0, 0, 0], // correct per level
+  totalCorrect: 0,
+  totalQ: 0,
+  // per-round
+  questions: [],
+  qIndex: 0,
+  roundCorrect: 0,
+  roundResults: [], // true/false per question
+  answered: false,
+};
+
+function generateRound(level) {
+  const qs = [];
+  for (let i = 0; i < 5; i++) qs.push(GEN[level]());
+  return qs;
+}
+
+// =========================================================
+//  SCREEN MANAGEMENT
+// =========================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function fadeTransition(cb) {
+  const fade = document.getElementById('fade');
+  fade.classList.add('fading');
+  setTimeout(() => {
+    cb();
+    setTimeout(() => fade.classList.remove('fading'), 100);
+  }, 400);
+}
+
+// =========================================================
+//  START GAME
+// =========================================================
+function startGame() {
+  const name = document.getElementById('pirate-name').value.trim();
+  state.playerName = name || 'Anonym Sømand';
+  state.totalCorrect = 0;
+  state.totalQ = 0;
+  state.levelResults = [null, null, null, null, null, null];
+  state.levelScores = [null, 0, 0, 0, 0, 0];
+  fadeTransition(() => { showScreen('map-screen'); renderMap(); });
+}
+
+// =========================================================
+//  MAP
+// =========================================================
+function isLevelUnlocked(lvl) {
+  if (lvl === 1) return true;
+  return state.levelResults[lvl - 1] === 'pass';
+}
+function isLevelCompleted(lvl) {
+  return state.levelResults[lvl] === 'pass';
+}
+
+function renderMap() {
+  const grid = document.getElementById('map-grid');
+  grid.innerHTML = '';
+  document.getElementById('map-total-correct').textContent = state.totalCorrect;
+  document.getElementById('map-total-q').textContent = state.totalQ;
+
+  LEVEL_DEFS.forEach(def => {
+    const lvl = def.id;
+    const unlocked = isLevelUnlocked(lvl);
+    const completed = isLevelCompleted(lvl);
+    const failed = state.levelResults[lvl] === 'fail';
+    const current = lvl === state.currentLevel && !completed;
+
+    const el = document.createElement('div');
+    el.className = 'map-level ' + (completed ? 'completed' : unlocked ? (current ? 'current-playing' : 'unlocked') : 'locked');
+
+    let statusHtml;
+    if (completed) statusHtml = '<span class="map-level-status status-done">✓ Klaret</span>';
+    else if (!unlocked) statusHtml = '<span class="map-level-status status-locked">🔒 Låst</span>';
+    else if (failed) statusHtml = '<span class="map-level-status status-retry">↺ Prøv igen</span>';
+    else statusHtml = '<span class="map-level-status status-play">▶ Spil</span>';
+
+    const score = state.levelScores[lvl] || 0;
+    const scoreStr = state.levelResults[lvl] != null ? ` (${score}/5)` : '';
+
+    el.innerHTML = `
+      <div class="map-level-icon">${def.icon}</div>
+      <div class="map-level-info">
+        <div class="map-level-name">${def.name}${scoreStr}</div>
+        <div class="map-level-desc">${def.desc}</div>
+      </div>
+      ${statusHtml}
+    `;
+    if (unlocked) {
+      el.addEventListener('click', () => {
+        document.getElementById('lock-tip').textContent = '';
+        startLevel(lvl);
+      });
+    } else {
+      el.addEventListener('click', () => {
+        document.getElementById('lock-tip').textContent = '⚓ Løs mindst 3 ud af 5 på det forrige niveau for at låse dette op!';
+      });
+    }
+    grid.appendChild(el);
+  });
+}
+
+// =========================================================
+//  START LEVEL
+// =========================================================
+function startLevel(lvl) {
+  state.currentLevel = lvl;
+  state.questions = generateRound(lvl);
+  state.qIndex = 0;
+  state.roundCorrect = 0;
+  state.roundResults = [];
+  state.answered = false;
+  fadeTransition(() => {
+    showScreen('game-screen');
+    document.getElementById('hud-name').textContent = state.playerName.split(' ')[0];
+    document.getElementById('hud-level').textContent = lvl;
+    document.getElementById('level-banner').textContent = LEVEL_DEFS[lvl - 1].banner;
+    renderQuestion();
+  });
+}
+
+// =========================================================
+//  RENDER QUESTION
+// =========================================================
+function renderQuestion() {
+  const q = state.questions[state.qIndex];
+  state.answered = false;
+
+  document.getElementById('q-number').textContent = `Spørgsmål ${state.qIndex + 1} af 5`;
+  document.getElementById('q-func').innerHTML = mathToHTML(q.func);
+  // Show kvrod tip if function involves √
+  const sqrtTip = document.getElementById('sqrt-tip');
+  if (q.func.includes('√') || q.deriv.includes('√')) {
+    sqrtTip.style.display = '';
+  } else {
+    sqrtTip.style.display = 'none';
+  }
+  document.getElementById('feedback-text').textContent = '';
+  document.getElementById('feedback-text').className = 'feedback-text';
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').className = 'answer-input';
+  document.getElementById('answer-input').disabled = false;
+  document.getElementById('correct-reveal').innerHTML = '';
+  document.getElementById('hint-box').classList.remove('visible');
+  document.getElementById('hint-content').innerHTML = q.hint;
+  document.getElementById('check-btn').style.visibility = '';
+  document.getElementById('next-btn').style.visibility = 'hidden';
+
+  document.getElementById('hud-correct').textContent =
+    state.roundCorrect + '/' + state.qIndex;
+
+  renderDots();
+
+  // Focus input
+  setTimeout(() => document.getElementById('answer-input').focus(), 100);
+
+  // Enter key
+  document.getElementById('answer-input').onkeydown = e => {
+    if (e.key === 'Enter') {
+      if (!state.answered) checkAnswer();
+      else nextQuestion();
+    }
+  };
+}
+
+function renderDots() {
+  const container = document.getElementById('progress-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    if (i < state.roundResults.length) {
+      d.classList.add(state.roundResults[i] ? 'correct' : 'wrong');
+    } else if (i === state.qIndex) {
+      d.classList.add('current');
+    }
+    container.appendChild(d);
+  }
+}
+
+// =========================================================
+//  CHECK ANSWER
+// =========================================================
+function checkAnswer() {
+  if (state.answered) return;
+  const q = state.questions[state.qIndex];
+  const userRaw = document.getElementById('answer-input').value.trim();
+  if (!userRaw) return;
+
+  state.answered = true;
+  const correct = answersMatch(userRaw, q.deriv);
+  state.roundResults.push(correct);
+  if (correct) { state.roundCorrect++; state.totalCorrect++; }
+  state.totalQ++;
+
+  const input = document.getElementById('answer-input');
+  const fb = document.getElementById('feedback-text');
+
+  input.disabled = true;
+  if (correct) {
+    input.classList.add('correct-input');
+    const msgs = ['Fremragende, matros! ⚔️', 'Godt skudt! 🏴‍☠️', 'Havets guder smiler! ⚓', 'Præcist som et skarpt sabel! ✨', 'Ypperlig navigering! 🌊'];
+    fb.textContent = msgs[rnd(0, msgs.length - 1)];
+    fb.classList.add('correct');
+  } else {
+    input.classList.add('wrong-input');
+    document.getElementById('correct-reveal').innerHTML = 'Rigtigt svar: f\'(x) = ' + mathToHTML(q.deriv);
+    const msgs = ['Ikke denne gang... ⚓', 'Kurs forkert! Prøv igen næste gang. ☠️', 'Havets mysterier slog dig! 🌊', 'Selv Kaptajn Kalkuløs fejler... 💀'];
+    fb.textContent = msgs[rnd(0, msgs.length - 1)];
+    fb.classList.add('wrong');
+  }
+
+  document.getElementById('hud-correct').textContent =
+    state.roundCorrect + '/' + (state.qIndex + 1);
+
+  renderDots();
+
+  document.getElementById('check-btn').style.visibility = 'hidden';
+  document.getElementById('next-btn').style.visibility = '';
+  document.getElementById('next-btn').textContent =
+    state.qIndex < 4 ? 'Næste ➤' : '⚓ Afslut niveau';
+}
+
+// =========================================================
+//  NEXT QUESTION / END LEVEL
+// =========================================================
+function nextQuestion() {
+  state.qIndex++;
+  if (state.qIndex < 5) {
+    renderQuestion();
+  } else {
+    endLevel();
+  }
+}
+
+function endLevel() {
+  const lvl = state.currentLevel;
+  const passed = state.roundCorrect >= 3;
+  state.levelResults[lvl] = passed ? 'pass' : 'fail';
+  state.levelScores[lvl] = state.roundCorrect;
+
+  // Build result dots
+  const dotsEl = document.getElementById('result-dots');
+  dotsEl.innerHTML = '';
+  state.roundResults.forEach(r => {
+    const d = document.createElement('div');
+    d.className = 'result-dot ' + (r ? 'c' : 'w');
+    dotsEl.appendChild(d);
+  });
+
+  if (passed) {
+    document.getElementById('result-icon').textContent = lvl === 5 ? '💰' : '✅';
+    document.getElementById('result-title').textContent = lvl === 5 ? 'SKATTEN ER DIN!' : 'Niveau klaret!';
+    document.getElementById('result-title').className = 'result-title success';
+    if (lvl === 5) {
+      document.getElementById('result-msg').textContent =
+        `Du løste ${state.roundCorrect} ud af 5 korrekt! Kaptajn Kalkuløs er imponeret!`;
+    } else {
+      const nextDef = LEVEL_DEFS[lvl];
+      document.getElementById('result-msg').textContent =
+        `Du løste ${state.roundCorrect} ud af 5 korrekt! Næste hav – ${nextDef.name} – er nu låst op. Sæt sejl!`;
+    }
+  } else {
+    document.getElementById('result-icon').textContent = '⚓';
+    document.getElementById('result-title').textContent = 'Ikke nok...';
+    document.getElementById('result-title').className = 'result-title fail';
+    document.getElementById('result-msg').textContent =
+      `Du fik ${state.roundCorrect} ud af 5 rigtige. Du har brug for mindst 3. Studér regnereglerne og forsøg igen, matros!`;
+  }
+
+  fadeTransition(() => {
+    if (passed && lvl === 5) {
+      showWinScreen();
+    } else {
+      showScreen('level-result-screen');
+    }
+  });
+}
+
+// =========================================================
+//  GO TO MAP
+// =========================================================
+function goToMap() {
+  fadeTransition(() => { showScreen('map-screen'); renderMap(); });
+}
+
+// =========================================================
+//  WIN SCREEN
+// =========================================================
+function showWinScreen() {
+  const name = state.playerName;
+  document.getElementById('win-title').textContent = `Tillykke, ${name}!`;
+  document.getElementById('win-msg').innerHTML =
+    `Du har besejret alle fem have og fundet Kaptajn Kalkuløs' skjulte skat! 🏴‍☠️<br><br>
+    Du beviste, at differentialregning ikke kan slå dig, og dit navn vil nu stå indskrevet i de store havkorts legender for evigt.<br><br>
+    <em>En ægte piratregnematematiker!</em>`;
+  document.getElementById('win-correct').textContent = state.totalCorrect;
+  document.getElementById('win-total').textContent = state.totalQ;
+  showScreen('win-screen');
+}
+
+function restartGame() {
+  fadeTransition(() => { showScreen('start-screen'); });
+}
+
+// =========================================================
+//  TOGGLE HINT
+// =========================================================
+function toggleHint() {
+  const box = document.getElementById('hint-box');
+  box.classList.toggle('visible');
+}
+
+</script>
+</body>
+</html>
